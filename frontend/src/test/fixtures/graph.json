@@ -1,0 +1,268 @@
+{
+ "name": "studymate",
+ "nodes": [
+  {
+   "id": "__start__",
+   "name": "__start__",
+   "type": "start"
+  },
+  {
+   "id": "load_memory_node",
+   "name": "load_memory_node",
+   "type": "node",
+   "title": "Load memory",
+   "kind": "memory",
+   "description": "Reads the user's structured profile from the LangGraph Store (namespace users/<user_id>/profile) so every later node can personalise. Also resets per-run state.",
+   "reads": [
+    "user_id",
+    "messages"
+   ],
+   "writes": [
+    "student_profile",
+    "retrieved_memory",
+    "current_query",
+    "execution_metadata"
+   ]
+  },
+  {
+   "id": "router_node",
+   "name": "router_node",
+   "type": "node",
+   "title": "Intent router",
+   "kind": "router",
+   "description": "Classifies the request (forced by the endpoint > keyword rules > LLM classifier > default). Its return value drives the conditional edge.",
+   "reads": [
+    "current_query",
+    "forced_intent",
+    "request_payload"
+   ],
+   "writes": [
+    "intent",
+    "topic",
+    "request_payload"
+   ]
+  },
+  {
+   "id": "explanation_node",
+   "name": "explanation_node",
+   "type": "node",
+   "title": "Explain",
+   "kind": "processing",
+   "description": "Builds a personalised system prompt, trims the history to the token budget, and asks the LLM for an explanation.",
+   "reads": [
+    "messages",
+    "student_profile",
+    "learning_insights"
+   ],
+   "writes": [
+    "generated_content",
+    "context_statistics",
+    "learning_insights"
+   ]
+  },
+  {
+   "id": "quiz_node",
+   "name": "quiz_node",
+   "type": "node",
+   "title": "Generate quiz",
+   "kind": "processing",
+   "description": "Asks the LLM for a validated JSON multiple-choice quiz (topic, difficulty, number of questions).",
+   "reads": [
+    "request_payload",
+    "student_profile",
+    "messages"
+   ],
+   "writes": [
+    "generated_content",
+    "context_statistics",
+    "learning_insights",
+    "topic"
+   ]
+  },
+  {
+   "id": "summarization_node",
+   "name": "summarization_node",
+   "type": "node",
+   "title": "Summarise notes",
+   "kind": "processing",
+   "description": "Produces summary, concepts, revision notes and key terms; long material is chunked (map-reduce) to fit the budget.",
+   "reads": [
+    "request_payload",
+    "current_query",
+    "student_profile"
+   ],
+   "writes": [
+    "generated_content",
+    "context_statistics",
+    "learning_insights",
+    "topic"
+   ]
+  },
+  {
+   "id": "general_node",
+   "name": "general_node",
+   "type": "node",
+   "title": "General / preference",
+   "kind": "processing",
+   "description": "Handles greetings and acknowledges stated learning preferences (the preference itself is persisted by memory_update_node).",
+   "reads": [
+    "messages",
+    "student_profile"
+   ],
+   "writes": [
+    "generated_content",
+    "context_statistics"
+   ]
+  },
+  {
+   "id": "response_node",
+   "name": "response_node",
+   "type": "node",
+   "title": "Compose response",
+   "kind": "response",
+   "description": "Converts generated_content to Markdown and appends the assistant message. The messages channel uses the add_messages reducer.",
+   "reads": [
+    "generated_content",
+    "intent"
+   ],
+   "writes": [
+    "messages"
+   ]
+  },
+  {
+   "id": "memory_update_node",
+   "name": "memory_update_node",
+   "type": "node",
+   "title": "Update memory",
+   "kind": "memory",
+   "description": "Extracts durable learning facts (style, language, subjects, preferences) with a controlled allow-list and writes them to the Store; records studied topics.",
+   "reads": [
+    "current_query",
+    "intent",
+    "topic"
+   ],
+   "writes": [
+    "student_profile",
+    "learning_insights",
+    "execution_metadata"
+   ]
+  },
+  {
+   "id": "__end__",
+   "name": "__end__",
+   "type": "end"
+  }
+ ],
+ "edges": [
+  {
+   "source": "__start__",
+   "target": "load_memory_node",
+   "conditional": false,
+   "label": null
+  },
+  {
+   "source": "explanation_node",
+   "target": "response_node",
+   "conditional": false,
+   "label": null
+  },
+  {
+   "source": "general_node",
+   "target": "response_node",
+   "conditional": false,
+   "label": null
+  },
+  {
+   "source": "load_memory_node",
+   "target": "router_node",
+   "conditional": false,
+   "label": null
+  },
+  {
+   "source": "quiz_node",
+   "target": "response_node",
+   "conditional": false,
+   "label": null
+  },
+  {
+   "source": "response_node",
+   "target": "memory_update_node",
+   "conditional": false,
+   "label": null
+  },
+  {
+   "source": "router_node",
+   "target": "explanation_node",
+   "conditional": true,
+   "label": "explanation"
+  },
+  {
+   "source": "router_node",
+   "target": "general_node",
+   "conditional": true,
+   "label": "preference / general"
+  },
+  {
+   "source": "router_node",
+   "target": "quiz_node",
+   "conditional": true,
+   "label": "quiz"
+  },
+  {
+   "source": "router_node",
+   "target": "summarization_node",
+   "conditional": true,
+   "label": "summarization"
+  },
+  {
+   "source": "summarization_node",
+   "target": "response_node",
+   "conditional": false,
+   "label": null
+  },
+  {
+   "source": "memory_update_node",
+   "target": "__end__",
+   "conditional": false,
+   "label": null
+  }
+ ],
+ "mermaid": "---\nconfig:\n  flowchart:\n    curve: linear\n---\ngraph TD;\n\t__start__([<p>__start__</p>]):::first\n\tload_memory_node(load_memory_node)\n\trouter_node(router_node)\n\texplanation_node(explanation_node)\n\tquiz_node(quiz_node)\n\tsummarization_node(summarization_node)\n\tgeneral_node(general_node)\n\tresponse_node(response_node)\n\tmemory_update_node(memory_update_node)\n\t__end__([<p>__end__</p>]):::last\n\t__start__ --> load_memory_node;\n\texplanation_node --> response_node;\n\tgeneral_node --> response_node;\n\tload_memory_node --> router_node;\n\tquiz_node --> response_node;\n\tresponse_node --> memory_update_node;\n\trouter_node -. &nbsp;explanation&nbsp; .-> explanation_node;\n\trouter_node -. &nbsp;general&nbsp; .-> general_node;\n\trouter_node -. &nbsp;quiz&nbsp; .-> quiz_node;\n\trouter_node -. &nbsp;summarization&nbsp; .-> summarization_node;\n\tsummarization_node --> response_node;\n\tmemory_update_node --> __end__;\n\tclassDef default fill:#f2f0ff,line-height:1.2\n\tclassDef first fill-opacity:0\n\tclassDef last fill:#bfb6fc\n",
+ "reducers": {
+  "messages": {
+   "reducer": "add_messages",
+   "behaviour": "Appends new messages; a message with an existing id replaces it. History is never dropped."
+  },
+  "learning_insights": {
+   "reducer": "merge_insights",
+   "behaviour": "Merges by (kind, topic): repeats increment count and union intents instead of replacing the list."
+  },
+  "execution_metadata": {
+   "reducer": "merge_execution_metadata",
+   "behaviour": "Appends node trace entries within a run; the first node resets it for each new run."
+  }
+ },
+ "state_fields": [
+  "messages",
+  "user_id",
+  "thread_id",
+  "intent",
+  "topic",
+  "current_query",
+  "forced_intent",
+  "request_payload",
+  "student_profile",
+  "retrieved_memory",
+  "learning_insights",
+  "generated_content",
+  "context_statistics",
+  "execution_metadata"
+ ],
+ "intents": [
+  "explanation",
+  "quiz",
+  "summarization",
+  "preference",
+  "general"
+ ]
+}

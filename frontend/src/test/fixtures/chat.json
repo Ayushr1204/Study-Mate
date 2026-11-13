@@ -1,0 +1,147 @@
+{
+ "thread_id": "8ce5a55de49a463d83144eb00d076f3b",
+ "title": "Explain CPU scheduling",
+ "message": {
+  "id": "9cce47e3-2420-4b61-930a-83b711ee4784",
+  "index": 1,
+  "role": "assistant",
+  "content": "## CPU Scheduling\n\nCPU scheduling is how an operating system decides which ready process gets the CPU next, so that the processor stays busy and every process makes fair progress.\n\n### How it works\n\n1. Processes that are ready to run wait in the ready queue.\n2. The scheduler picks one according to its policy (FCFS, SJF, Priority, Round Robin).\n3. The dispatcher performs a context switch and gives that process the CPU.\n4. The process runs until it finishes, blocks on I/O, or its time quantum expires.\n5. The scheduler picks the next process and the cycle repeats.\n\n### Key points\n\n- Goals: high CPU utilisation, high throughput, low waiting and turnaround time, fairness.\n- Preemptive policies (Round Robin, SRTF) can interrupt a running process; non-preemptive ones cannot.\n- A very small time quantum causes excessive context-switch overhead; a very large one degrades to FCFS.\n\n---\n*Offline fallback: no language model is connected, so this answer came from StudyMate's small built-in knowledge base. Start Ollama (`ollama serve` + `ollama pull <model>`) for full answers.*",
+  "created_at": "2026-11-12T17:29:54+00:00",
+  "meta": {
+   "intent": "explanation",
+   "content_type": "explanation",
+   "provider": "offline",
+   "model": "built-in-knowledge-base",
+   "fallback_reason": null,
+   "run_id": "4d917783fa8e430f9af2669636373753",
+   "memory_fields_used": []
+  }
+ },
+ "execution": {
+  "request_id": "4d917783fa8e430f9af2669636373753",
+  "thread_id": "8ce5a55de49a463d83144eb00d076f3b",
+  "user_id": "fx",
+  "kind": "chat",
+  "created_at": "2026-11-12T17:29:54+00:00",
+  "status": "ok",
+  "error": null,
+  "intent": "explanation",
+  "topic": "cpu scheduling",
+  "route": {
+   "intent": "explanation",
+   "method": "rules",
+   "reason": "question / explanation request",
+   "topic": "cpu scheduling"
+  },
+  "path": [
+   "load_memory_node",
+   "router_node",
+   "explanation_node",
+   "response_node",
+   "memory_update_node"
+  ],
+  "trace": [
+   {
+    "node": "load_memory_node",
+    "status": "ok",
+    "started_at": "2026-11-12T17:29:54+00:00",
+    "duration_ms": 0,
+    "detail": {
+     "namespace": "users/fx/profile",
+     "profile_found": false,
+     "fields_loaded": []
+    }
+   },
+   {
+    "node": "router_node",
+    "status": "ok",
+    "started_at": "2026-11-12T17:29:54+00:00",
+    "duration_ms": 0,
+    "detail": {
+     "intent": "explanation",
+     "method": "rules",
+     "reason": "question / explanation request",
+     "topic": "cpu scheduling"
+    }
+   },
+   {
+    "node": "explanation_node",
+    "status": "ok",
+    "started_at": "2026-11-12T17:29:54+00:00",
+    "duration_ms": 0,
+    "detail": {
+     "personalised_with": [],
+     "llm": "offline/built-in-knowledge-base",
+     "latency_ms": 0
+    }
+   },
+   {
+    "node": "response_node",
+    "status": "ok",
+    "started_at": "2026-11-12T17:29:54+00:00",
+    "duration_ms": 0,
+    "detail": {
+     "content_type": "explanation",
+     "chars": 1080
+    }
+   },
+   {
+    "node": "memory_update_node",
+    "status": "ok",
+    "started_at": "2026-11-12T17:29:54+00:00",
+    "duration_ms": 1,
+    "detail": {
+     "extraction": "rules",
+     "changes": [],
+     "topic_recorded": "cpu scheduling"
+    }
+   }
+  ],
+  "duration_ms": 21,
+  "context": {
+   "total_messages": 1,
+   "retained_messages": 1,
+   "excluded_messages": 0,
+   "filtered_messages": 0,
+   "trimmed_messages": 0,
+   "truncated_messages": 0,
+   "tokens_before": 139,
+   "tokens_after": 139,
+   "token_budget": 3000,
+   "system_prompt_tokens": 129,
+   "max_message_tokens": 1200,
+   "token_counter": "approx:chars/4",
+   "token_counter_exact": false,
+   "within_budget": true,
+   "scope": "conversation",
+   "decisions": [
+    [
+     "retained",
+     10,
+     10,
+     0
+    ]
+   ]
+  },
+  "retrieved_memory": {
+   "namespace": [
+    "users",
+    "fx",
+    "profile"
+   ],
+   "key": "profile",
+   "found": false,
+   "fields": [],
+   "updated_at": null
+  },
+  "memory_changes": [],
+  "llm": {
+   "provider": "offline",
+   "model": "built-in-knowledge-base",
+   "prompt_tokens": null,
+   "completion_tokens": null,
+   "latency_ms": 0,
+   "fallback_reason": null
+  }
+ }
+}
